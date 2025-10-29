@@ -1,0 +1,81 @@
+﻿using System.Collections.Generic;
+using Duckov.Modding;
+using UnityEngine;
+
+namespace ModSettingTest {
+    public class ModBehaviour : Duckov.Modding.ModBehaviour {
+        private void OnEnable() {
+            ModManager.OnModActivated += ModManager_OnModActivated;
+            ModManager.OnModWillBeDeactivated += ModManager_OnModWillBeDeactivated;
+            Saver.Load();
+        }
+        private void OnDisable() {
+            ModManager.OnModActivated -= ModManager_OnModActivated;
+            ModManager.OnModWillBeDeactivated -= ModManager_OnModWillBeDeactivated;
+            Saver.Save();
+            Setting.Clear();
+        }
+
+        private void Update() {
+            if (Input.GetKeyDown(Setting.Keybinding1)) {
+                Setting.SetSlider1(Mathf.Max(0, Setting.Slider1 - 2));
+            }
+
+            if (Input.GetKeyDown(Setting.Keybinding2)) {
+                Setting.SetSlider1(Mathf.Min(100, Setting.Slider1 + 2));
+                ModSetting.GetValue<string>("I2", result => {
+                    Debug.Log("输入框2的值为:" + result);
+                });
+            }
+        }
+
+        private void AddUI() {
+            ModSetting.AddDropdownList("D1", "下拉列表1",
+                new List<string> { "选项1", "选项2", "选项3" }, 
+                Setting.Dropdown1, Setting.SetDropdown1);
+            ModSetting.AddDropdownList("D2", "下拉列表2", 
+                new List<string> { "选项7", "选项8", "选项9" },
+                Setting.Dropdown2, Setting.SetDropdown2);
+            ModSetting.AddToggle("T1", "按钮1", Setting.Toggle1, Setting.SetToggle1);
+            ModSetting.AddToggle("T2", "按钮2", Setting.Toggle2, Setting.SetToggle2);
+            ModSetting.AddSlider("S1", "滑块1", Setting.Slider1, new Vector2(0, 100), Setting.SetSlider1);
+            ModSetting.AddSlider("S2", "滑块2", Setting.Slider2, new Vector2(0, 1000), Setting.SetSlider2);
+            ModSetting.AddInput("I1", "输入框1", Setting.Input1, 40, Setting.SetInput1);
+            ModSetting.AddInput("I2", "输入框2", Setting.Input2, 50, Setting.SetInput2);
+            ModSetting.AddKeybinding("K1", "按键绑定1", Setting.Keybinding1, Setting.SetKeybinding1);
+            ModSetting.AddKeybinding("K2", "按键绑定2", Setting.Keybinding2, Setting.SetKeybinding2);
+            
+            ModSetting.AddToggle("T3", "点击移除S2", false, value => {
+                ModSetting.RemoveUI("S2", result => { Debug.Log($"移除{(result?"成功":"失败")}");
+                });
+            });
+            Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
+        }
+
+        private void Setting_OnSlider1ValueChanged(float value) {
+            //此mod设置数据变化时，设置UI的数值，单方面通知UI更新
+            ModSetting.SetValue("S1", value);
+        }
+
+        private void ModManager_OnModActivated(ModInfo arg1, Duckov.Modding.ModBehaviour arg2) {
+            if (arg1.name != ModSetting.MOD_NAME || !ModSetting.Init(info)) return;
+            //(触发时机:此mod在ModSetting之前启用)检查启用的mod是否是ModSetting,是进行初始化
+            AddUI();
+        }
+        private void ModManager_OnModWillBeDeactivated(ModInfo arg1, Duckov.Modding.ModBehaviour arg2) {
+            if (arg1.name != ModSetting.MOD_NAME || !ModSetting.Init(info)) return;
+            //禁用ModSetting的时候移除监听
+            Setting.OnSlider1ValueChanged -= Setting_OnSlider1ValueChanged;
+        }
+
+        protected override void OnAfterSetup() {
+            //(触发时机:ModSetting在此mod之前启用)此mod，Setup后,尝试进行初始化
+            if (ModSetting.Init(info)) AddUI();
+        }
+
+        protected override void OnBeforeDeactivate() {
+            //此mod禁用后，移除ModSetting中的UI
+            ModSetting.RemoveMod();
+        }
+    }
+}
