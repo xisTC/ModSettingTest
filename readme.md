@@ -1,3 +1,12 @@
 可以使用'测试dll'文件夹中的配置，本地测试bug。
 如果要使用Saver类来保存数据，需要注意GetConfigPath方法中typeof(ModBehaviour)需要是你自己的ModBehaviour
 否则配置文件将不会保存在你mod文件夹下，而是保存在Duckov_Data\Managed中
+
+# 主菜单设置 
+![主菜单](./images/主菜单.jpg)
+![主菜单](./images/主菜单2.jpg)
+
+# 设置效果 
+
+![设置](./images/设置1.jpg)
+![设置](./images/设置2.jpg)
