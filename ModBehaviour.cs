@@ -26,6 +26,7 @@ namespace ModSettingTest {
                 ModSettingAPI.GetValue<string>("I2", result => {
                     Debug.Log("输入框2的值为:" + result);
                 });
+                ModSettingAPI.GetValue<int>("S4", value => { Debug.Log("S4:" + value); });
             }
         }
 
