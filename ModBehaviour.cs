@@ -56,15 +56,25 @@ namespace ModSettingTest {
                 });
             });
             ModSettingAPI.AddButton("B2", "恢复所有默认值","重置",Reset);
-            ModSettingAPI.AddButton("B2", "恢复所有默认值","重置",Reset);
+            ModSettingAPI.AddButton("B3", "移除滑块组","移除", () => {
+                ModSettingAPI.RemoveUI("G3");
+            });
+
+            ModSettingAPI.AddGroup("G1", "下拉列表组", new List<string>() { "D1", "D2" });
+            ModSettingAPI.AddGroup("G2", "Toggle组", new List<string>() { "T1", "T2" }, 0.7f,true,true);
+            ModSettingAPI.AddGroup("G3", "滑块组", new List<string>() { "S1", "S2","S3","S4" }, 0.7f,true);
+            ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1", "I2"}, 0.7f,false,true);
+            ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4"});
+            ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2"});
+            //注: 目前不支持group的嵌套，后续更新实现
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             
         }
         private void Reset() {
+            //注意：SetValue只是单方面通知UI设置值,也就是说UI的onValueChange不会被调用
+            //如果需要同步，应该先设置此mod的值，再将此mod的值设置给ModSetting。如：Dropdown1这样，其余的都只改变了UI的值并没有改变此mod的值。
             Setting.SetDropdown1("选项1");
             ModSettingAPI.SetValue("D1",Setting.Dropdown1);
-            //注意：SetValue只是单方面通知UI设置值,也就是说UI的onValueChange不会被调用
-            //如果需要同步，应该先设置此mod的值，再将此mod的值设置给ModSetting
             ModSettingAPI.SetValue("D2", "选项7");
             ModSettingAPI.SetValue("T1", false);
             ModSettingAPI.SetValue("T2", false);
@@ -85,19 +95,19 @@ namespace ModSettingTest {
             ModSettingAPI.SetValue("S1", value);
         }
 
-        private void ModManager_OnModActivated(ModInfo arg1, Duckov.Modding.ModBehaviour arg2) {
-            if (arg1.name != ModSettingAPI.MOD_NAME || !ModSettingAPI.Init(info)) return;
-            //(触发时机:此mod在ModSetting之前启用)检查启用的mod是否是ModSetting,是进行初始化
-            AddUI();
-        }
         private void ModManager_OnModWillBeDeactivated(ModInfo arg1, Duckov.Modding.ModBehaviour arg2) {
             if (arg1.name != ModSettingAPI.MOD_NAME || !ModSettingAPI.Init(info)) return;
             //禁用ModSetting的时候移除监听
             Setting.OnSlider1ValueChanged -= Setting_OnSlider1ValueChanged;
         }
-
+        //下面两个函数需要实现，实现后的效果是：ModSetting和mod之间不需要启动顺序，两者无论谁先启动都能正常添加设置
+        private void ModManager_OnModActivated(ModInfo arg1, Duckov.Modding.ModBehaviour arg2) {
+            if (arg1.name != ModSettingAPI.MOD_NAME || !ModSettingAPI.Init(info)) return;
+            //(触发时机:此mod在ModSetting之前启用)检查启用的mod是否是ModSetting,是进行初始化
+            AddUI();
+        }
         protected override void OnAfterSetup() {
-            //(触发时机:ModSetting在此mod之前启用)此mod，Setup后,尝试进行初始化
+            //(触发时机:此mod在ModSetting之后启用)此mod，Setup后,尝试进行初始化
             if (ModSettingAPI.Init(info)) AddUI();
         }
     }
