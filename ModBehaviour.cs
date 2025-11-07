@@ -47,13 +47,37 @@ namespace ModSettingTest {
             ModSettingAPI.AddInput("I2", "输入框2", Setting.Input2, 50, Setting.SetInput2);
             ModSettingAPI.AddKeybinding("K1", "按键绑定1", Setting.Keybinding1, Setting.SetKeybinding1);
             ModSettingAPI.AddKeybinding("K2", "按键绑定2", Setting.Keybinding2, Setting.SetKeybinding2);
+            ModSettingAPI.AddKeybindingWithDefault("K3", "按键绑定3", KeyCode.Alpha0,KeyCode.Alpha0,value=>{
+                Debug.Log(value);});
+            ModSettingAPI.AddKeybindingWithDefault("K4", "按键绑定4", KeyCode.Alpha1,KeyCode.Alpha1);
             
-            ModSettingAPI.AddToggle("T3", "点击移除S2", false, value => {
+            ModSettingAPI.AddButton("B1", "点击移除S2","按钮", () => {
                 ModSettingAPI.RemoveUI("S2", result => { Debug.Log($"移除{(result?"成功":"失败")}");
                 });
             });
+            ModSettingAPI.AddButton("B2", "恢复所有默认值","重置",Reset);
+            ModSettingAPI.AddButton("B2", "恢复所有默认值","重置",Reset);
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             
+        }
+        private void Reset() {
+            Setting.SetDropdown1("选项1");
+            ModSettingAPI.SetValue("D1",Setting.Dropdown1);
+            //注意：SetValue只是单方面通知UI设置值,也就是说UI的onValueChange不会被调用
+            //如果需要同步，应该先设置此mod的值，再将此mod的值设置给ModSetting
+            ModSettingAPI.SetValue("D2", "选项7");
+            ModSettingAPI.SetValue("T1", false);
+            ModSettingAPI.SetValue("T2", false);
+            ModSettingAPI.SetValue("S1", 0f);
+            ModSettingAPI.SetValue("S2", 0f);
+            ModSettingAPI.SetValue("S3", 0f);
+            ModSettingAPI.SetValue("S4", 0);
+            ModSettingAPI.SetValue("I1", "输入框1默认文本");
+            ModSettingAPI.SetValue("I2", "输入框2默认文本");
+            ModSettingAPI.SetValue("K1", KeyCode.I);
+            ModSettingAPI.SetValue("K2", KeyCode.O);
+            ModSettingAPI.SetValue("K3", KeyCode.P);
+            ModSettingAPI.SetValue("K4", KeyCode.L);
         }
 
         private void Setting_OnSlider1ValueChanged(float value) {
