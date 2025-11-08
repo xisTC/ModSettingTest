@@ -37,8 +37,8 @@ namespace ModSettingTest {
             ModSettingAPI.AddDropdownList("D2", "下拉列表2", 
                 new List<string> { "选项7", "选项8", "选项9" },
                 Setting.Dropdown2, Setting.SetDropdown2);
-            ModSettingAPI.AddToggle("T1", "按钮1", Setting.Toggle1, Setting.SetToggle1);
-            ModSettingAPI.AddToggle("T2", "按钮2", Setting.Toggle2, Setting.SetToggle2);
+            ModSettingAPI.AddToggle("T1", "开关1", Setting.Toggle1, Setting.SetToggle1);
+            ModSettingAPI.AddToggle("T2", "开关2", Setting.Toggle2, Setting.SetToggle2);
             ModSettingAPI.AddSlider("S1", "滑块1", Setting.Slider1, new Vector2(0, 100), Setting.SetSlider1);
             ModSettingAPI.AddSlider("S2", "滑块2", Setting.Slider2, new Vector2(0, 1000), Setting.SetSlider2,2);
             ModSettingAPI.AddSlider("S3", "滑块3", 60, new Vector2(0, 1000), null,3,8);
@@ -47,6 +47,7 @@ namespace ModSettingTest {
             ModSettingAPI.AddInput("I2", "输入框2", Setting.Input2, 50, Setting.SetInput2);
             ModSettingAPI.AddKeybinding("K1", "按键绑定1", Setting.Keybinding1, Setting.SetKeybinding1);
             ModSettingAPI.AddKeybinding("K2", "按键绑定2", Setting.Keybinding2, Setting.SetKeybinding2);
+            //设置按键绑定默认值
             ModSettingAPI.AddKeybinding("K3", "按键绑定3", KeyCode.Alpha0,KeyCode.Alpha0,value=>{
                 Debug.Log(value);});
             ModSettingAPI.AddKeybinding("K4", "按键绑定4", KeyCode.Alpha1,KeyCode.Alpha1);
@@ -59,13 +60,13 @@ namespace ModSettingTest {
             ModSettingAPI.AddButton("B3", "移除滑块组","移除", () => {
                 ModSettingAPI.RemoveUI("G3");
             });
-
-            ModSettingAPI.AddGroup("G1", "下拉列表组", new List<string>() { "D1", "D2" });
-            ModSettingAPI.AddGroup("G2", "Toggle组", new List<string>() { "T1", "T2" }, 0.7f,true,true);
+            //Group用于整理设置项过多的情况，一般来说不需要使用。
+            ModSettingAPI.AddGroup("G1", "下拉列表组", new List<string>() { "D1", "D2" },0.6f,true);
+            ModSettingAPI.AddGroup("G2", "开关组", new List<string>() { "T1", "T2" }, 0.7f,true,true);
             ModSettingAPI.AddGroup("G3", "滑块组", new List<string>() { "S1", "S2","S3","S4" }, 0.7f,true);
-            ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1", "I2"}, 0.7f,false,true);
-            ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4"});
-            ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2","B3"});
+            // ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1", "I2"}, 0.7f,false,true);
+            // ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4"});
+            // ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2","B3"});
             //注: 目前不支持group的嵌套，后续更新实现
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             
