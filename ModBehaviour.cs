@@ -47,9 +47,9 @@ namespace ModSettingTest {
             ModSettingAPI.AddInput("I2", "输入框2", Setting.Input2, 50, Setting.SetInput2);
             ModSettingAPI.AddKeybinding("K1", "按键绑定1", Setting.Keybinding1, Setting.SetKeybinding1);
             ModSettingAPI.AddKeybinding("K2", "按键绑定2", Setting.Keybinding2, Setting.SetKeybinding2);
-            ModSettingAPI.AddKeybindingWithDefault("K3", "按键绑定3", KeyCode.Alpha0,KeyCode.Alpha0,value=>{
+            ModSettingAPI.AddKeybinding("K3", "按键绑定3", KeyCode.Alpha0,KeyCode.Alpha0,value=>{
                 Debug.Log(value);});
-            ModSettingAPI.AddKeybindingWithDefault("K4", "按键绑定4", KeyCode.Alpha1,KeyCode.Alpha1);
+            ModSettingAPI.AddKeybinding("K4", "按键绑定4", KeyCode.Alpha1,KeyCode.Alpha1);
             
             ModSettingAPI.AddButton("B1", "点击移除S2","按钮", () => {
                 ModSettingAPI.RemoveUI("S2", result => { Debug.Log($"移除{(result?"成功":"失败")}");
@@ -65,7 +65,7 @@ namespace ModSettingTest {
             ModSettingAPI.AddGroup("G3", "滑块组", new List<string>() { "S1", "S2","S3","S4" }, 0.7f,true);
             ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1", "I2"}, 0.7f,false,true);
             ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4"});
-            ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2"});
+            ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2","B3"});
             //注: 目前不支持group的嵌套，后续更新实现
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             
