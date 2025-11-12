@@ -15,7 +15,8 @@ namespace ModSettingTest {
             if (File.Exists(configPath)) {
                 string json = File.ReadAllText(configPath);
                 SettingData data = jsonSerializer.Deserialize<SettingData>(new JsonTextReader(new StringReader(json)));
-                if (!string.IsNullOrEmpty(data.dropdown1)) {
+                if (!string.IsNullOrEmpty(data.dropdown1)&&
+                    !string.IsNullOrEmpty(data.dropdown1key)) {
                     Setting.SetDropdown1(data.dropdown1);
                     Setting.SetDropdown2(data.dropdown2);
                     Setting.SetToggle1(data.toggle1);
@@ -31,7 +32,9 @@ namespace ModSettingTest {
             }
             // 默认设置
             Setting.SetDropdown1("选项2");
+            Setting.Dropdown1Key = "D1_Option1";
             Setting.SetDropdown2("选项9");
+            Setting.Dropdown2Key = "D2_Option2";
             Setting.SetToggle1(true);
             Setting.SetToggle2(false);
             Setting.SetKeybinding1(KeyCode.None);

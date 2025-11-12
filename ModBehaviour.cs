@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Duckov.Modding;
 using SodaCraft.Localizations;
 using UnityEngine;
@@ -9,6 +10,7 @@ namespace ModSettingTest {
         private void OnEnable() {
             ModManager.OnModActivated += ModManager_OnModActivated;
             ModManager.OnModWillBeDeactivated += ModManager_OnModWillBeDeactivated;
+            //测试语言切换
             LocalizationManager.OnSetLanguage += LocalizationManager_OnSetLanguage;
             InitLanguagePack();
             Saver.Load();
@@ -21,16 +23,16 @@ namespace ModSettingTest {
             Saver.Save();
             Setting.Clear();
         }
-
+        //language参数是为了测试多语言切换
         private void AddUI(SystemLanguage language = SystemLanguage.ChineseSimplified) {
             if (!languagePack.TryGetValue(language, out var dictionary))
                 dictionary = languagePack[SystemLanguage.English];
             string dropDownDescription1 = dictionary["D1"];
             List<string> dropDownOptions1 = new List<string>()
-                { dictionary["选项1"], dictionary["选项2"], dictionary["选项3"] };
+                { dictionary["D1_Option1"], dictionary["D1_Option2"], dictionary["D1_Option3"] };
             string dropDownDescription2 = dictionary["D2"];
             List<string> dropDownOptions2 = new List<string>()
-                { dictionary["选项7"], dictionary["选项8"], dictionary["选项9"] };
+                { dictionary["D2_Option1"], dictionary["D2_Option2"], dictionary["D2_Option3"] };
             string toggleDescription1 = dictionary["T1"];
             string toggleDescription2 = dictionary["T2"];
             string sliderDescription1 = dictionary["S1"];
@@ -49,8 +51,26 @@ namespace ModSettingTest {
             string groupDescription1 = dictionary["G1"];
             string groupDescription2 = dictionary["G2"];
             string groupDescription3 = dictionary["G3"];
-            ModSettingAPI.AddDropdownList("D1", dropDownDescription1, dropDownOptions1, dictionary[Setting.Dropdown1], Setting.SetDropdown1);
-            ModSettingAPI.AddDropdownList("D2", dropDownDescription2, dropDownOptions2, dictionary[Setting.Dropdown2], Setting.SetDropdown2);
+            var list1 = new List<string>(){"D1_Option1","D1_Option2","D1_Option3"};
+            var list2 = new List<string>(){"D2_Option1","D2_Option2","D2_Option3"};
+            try {
+                var dropIndex1=list1.IndexOf(Setting.Dropdown1Key);
+                var dropIndex2=list2.IndexOf(Setting.Dropdown2Key);
+                Setting.SetDropdown1(dropDownOptions1[dropIndex1]);
+                Setting.SetDropdown2(dropDownOptions2[dropIndex2]);
+            } catch (Exception e) {
+                Debug.Log(Setting.Dropdown1Key+"=key1");
+                Debug.Log(Setting.Dropdown2Key+"=key2");
+                Debug.LogError("key不在列表中");
+            }
+            ModSettingAPI.AddDropdownList("D1", dropDownDescription1, dropDownOptions1, Setting.Dropdown1, value => {
+                Setting.SetDropdown1(value);
+                Setting.Dropdown1Key = list1[dropDownOptions1.IndexOf(value)];
+            } );
+            ModSettingAPI.AddDropdownList("D2", dropDownDescription2, dropDownOptions2, Setting.Dropdown2, value => {
+                Setting.SetDropdown2(value);
+                Setting.Dropdown2Key = list2[dropDownOptions2.IndexOf(value)];
+            });
             ModSettingAPI.AddToggle("T1", toggleDescription1, Setting.Toggle1, Setting.SetToggle1);
             ModSettingAPI.AddToggle("T2",  toggleDescription2, Setting.Toggle2, Setting.SetToggle2);
             ModSettingAPI.AddSlider("S1", sliderDescription1, Setting.Slider1, new Vector2(0, 100), Setting.SetSlider1);
@@ -79,10 +99,7 @@ namespace ModSettingTest {
             //注: 目前不支持group的嵌套，后续更新实现
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             //测试 issue1
-            TestIssue1();
-            //测试控件添加问题
-            ModSettingAPI.AddToggle("testAdd", "添加控件", true, AddTest);
-            AddTest(true);
+            // TestIssue.Issue1();
         }
 
         private void Update() {
@@ -96,53 +113,11 @@ namespace ModSettingTest {
                 ModSettingAPI.GetValue<int>("S4", value => { Debug.Log("S4:" + value); });
             }
         }
-
-        private void AddTest(bool obj) {
-            if (obj) {
-                ModSettingAPI.AddButton("testadd1", "testadd1");
-                ModSettingAPI.AddButton("testadd2", "testadd2");
-                ModSettingAPI.AddButton("testadd3", "testadd3");
-                ModSettingAPI.AddButton("testadd4", "testadd4");
-                ModSettingAPI.AddButton("testadd5", "testadd5");
-            } else {
-                ModSettingAPI.RemoveUI("testadd1");
-                ModSettingAPI.RemoveUI("testadd2");
-                ModSettingAPI.RemoveUI("testadd3");
-                ModSettingAPI.RemoveUI("testadd4");
-                ModSettingAPI.RemoveUI("testadd5");
-            }
-        }
-
-        private void TestIssue1() {
-            bool enable = true;
-            ModSettingAPI.AddToggle("quality", "是否启用品质视觉效果", enable, QualityUICallback);
-            if (enable) AddTestUI();
-        }
-
-        private static void AddTestUI() {
-            ModSettingAPI.AddButton("lv0color", "垃圾物品颜色");
-            ModSettingAPI.AddButton("lv1color", "普通物品颜色");
-            ModSettingAPI.AddButton("lv2color", "优良物品颜色");
-            ModSettingAPI.AddButton("lv3color", "精良物品颜色");
-            ModSettingAPI.AddButton("lv4color", "史诗物品颜色");
-            ModSettingAPI.AddButton("lv5color", "传说物品颜色");
-            ModSettingAPI.AddButton("lv6color", "神话物品颜色");
-            ModSettingAPI.AddGroup("ColorGroup", "物品颜色设置",
-                new List<string> { "lv0color", "lv1color", "lv2color", "lv3color", "lv4color", "lv5color", "lv6color" });
-        }
-
-        private void QualityUICallback(bool value) {
-            if (value) {
-               AddTestUI();
-            } else {
-                ModSettingAPI.RemoveUI("ColorGroup");
-            }
-        }
-
         private void Reset() {
             //注意：SetValue只是单方面通知UI设置值,也就是说UI的onValueChange不会被调用
             //如果需要同步，应该先设置此mod的值，再将此mod的值设置给ModSetting。如：Dropdown1这样，其余的都只改变了UI的值并没有改变此mod的值。
             Setting.SetDropdown1("选项1");
+            Setting.Dropdown1Key = "D1_Option1";
             ModSettingAPI.SetValue("D1", Setting.Dropdown1);
             ModSettingAPI.SetValue("D2", "选项7");
             ModSettingAPI.SetValue("T1", false);
@@ -192,13 +167,13 @@ namespace ModSettingTest {
         private void InitLanguagePack() {
             languagePack.Add(SystemLanguage.ChineseSimplified,new Dictionary<string, string>() {
                 {"D1","下拉列表1"},
-                {"选项1","选项1"},
-                {"选项2","选项2"},
-                {"选项3","选项3"},
+                {"D1_Option1","选项1"},
+                {"D1_Option2","选项2"},
+                {"D1_Option3","选项3"},
                 {"D2","下拉列表2"},
-                {"选项7","选项7"},
-                {"选项8","选项8"},
-                {"选项9","选项9"},
+                {"D2_Option1","选项7"},
+                {"D2_Option2","选项8"},
+                {"D2_Option3","选项9"},
                 {"T1","开关1"},
                 {"T2","开关2"},
                 {"S1","滑块1"},
@@ -220,13 +195,13 @@ namespace ModSettingTest {
             });
             languagePack.Add(SystemLanguage.English,new Dictionary<string, string>() {
                 {"D1","DropDown1"},
-                {"选项1","Option1"},
-                {"选项2","Option2"},
-                {"选项3","Option3"},
+                {"D1_Option1","Option1"},
+                {"D1_Option2","Option2"},
+                {"D1_Option3","Option3"},
                 {"D2","DropDown2"},
-                {"选项7","Option1"},
-                {"选项8","Option2"},
-                {"选项9","Option3"},
+                {"D2_Option1","Option7"},
+                {"D2_Option2","Option8"},
+                {"D2_Option3","Option9"},
                 {"T1","Toggle1"},
                 {"T2","Toggle2"},
                 {"S1","Slider1"},

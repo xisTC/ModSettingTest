@@ -4,7 +4,9 @@ using UnityEngine;
 namespace ModSettingTest {
     public static class Setting {
         public static string Dropdown1 { get; private set; }
+        public static string Dropdown1Key { get;  set; }
         public static string Dropdown2 { get; private set; }
+        public static string Dropdown2Key { get;  set; }
         public static bool Toggle1 { get; private set; }
         public static bool Toggle2 { get; private set; }
         public static float Slider1 { get; private set; }
@@ -32,7 +34,9 @@ namespace ModSettingTest {
         public static SettingData GetData() {
             return new SettingData(
                 Dropdown1,
+                Dropdown1Key,
                 Dropdown2,
+                    Dropdown2Key,
                 Toggle1,
                 Toggle2,
                 Slider1,
@@ -50,7 +54,9 @@ namespace ModSettingTest {
     [Serializable]
     public struct SettingData {
         public string dropdown1;
+        public string dropdown1key;
         public string dropdown2;
+        public string dropdown2key;
         public bool toggle1;
         public bool toggle2;
         public float slider1;
@@ -60,9 +66,11 @@ namespace ModSettingTest {
         public string keybinding1;
         public string keybinding2;
 
-        public SettingData(string dropdown1, string dropdown2, bool toggle1, bool toggle2, float slider1, float slider2, string input1, string input2, string keybinding1, string keybinding2) {
+        public SettingData(string dropdown1, string dropdown1Key, string dropdown2, string dropdown2Key, bool toggle1, bool toggle2, float slider1, float slider2, string input1, string input2, string keybinding1, string keybinding2) {
             this.dropdown1 = dropdown1;
+            dropdown1key = dropdown1Key;
             this.dropdown2 = dropdown2;
+            dropdown2key = dropdown2Key;
             this.toggle1 = toggle1;
             this.toggle2 = toggle2;
             this.slider1 = slider1;
