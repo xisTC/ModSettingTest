@@ -17,7 +17,7 @@ namespace ModSettingTest {
             ModSettingAPI.AddSlider("lv4time", "史诗物品搜索时间比例", 0.8f, new Vector2(0.1f, 3.0f));
             ModSettingAPI.AddSlider("lv5time", "传说物品搜索时间比例", 0.8f, new Vector2(0.1f, 3.0f));
             ModSettingAPI.AddSlider("lv6time", "神话物品搜索时间比例", 0.8f, new Vector2(0.1f, 3.0f));
-            ModSettingAPI.AddGroup("TimeGroup", "搜索时间设置",new List<string>{"lv0time","lv1time","lv2time","lv3time","lv4time","lv5time","lv6time"});
+            ModSettingAPI.AddGroup("TimeGroup", "搜索时间设置",new List<string>{"lv0time","lv1time","lv2time","lv3time","lv4time","lv5time","lv6time"},0.7f,true);
         }
         private static void QualityUICallback(bool value) {
             if (value) {

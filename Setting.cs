@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace ModSettingTest {
     public static class Setting {
@@ -36,7 +37,7 @@ namespace ModSettingTest {
                 Dropdown1,
                 Dropdown1Key,
                 Dropdown2,
-                    Dropdown2Key,
+                Dropdown2Key,
                 Toggle1,
                 Toggle2,
                 Slider1,
@@ -54,9 +55,9 @@ namespace ModSettingTest {
     [Serializable]
     public struct SettingData {
         public string dropdown1;
-        public string dropdown1key;
+        public string dropdown1Key;
         public string dropdown2;
-        public string dropdown2key;
+        public string dropdown2Key;
         public bool toggle1;
         public bool toggle2;
         public float slider1;
@@ -68,9 +69,9 @@ namespace ModSettingTest {
 
         public SettingData(string dropdown1, string dropdown1Key, string dropdown2, string dropdown2Key, bool toggle1, bool toggle2, float slider1, float slider2, string input1, string input2, string keybinding1, string keybinding2) {
             this.dropdown1 = dropdown1;
-            dropdown1key = dropdown1Key;
+            this.dropdown1Key = dropdown1Key;
             this.dropdown2 = dropdown2;
-            dropdown2key = dropdown2Key;
+            this.dropdown2Key = dropdown2Key;
             this.toggle1 = toggle1;
             this.toggle2 = toggle2;
             this.slider1 = slider1;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Duckov.Modding;
 using SodaCraft.Localizations;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace ModSettingTest {
     public class ModBehaviour : Duckov.Modding.ModBehaviour {
@@ -53,22 +54,20 @@ namespace ModSettingTest {
             string groupDescription3 = dictionary["G3"];
             var list1 = new List<string>(){"D1_Option1","D1_Option2","D1_Option3"};
             var list2 = new List<string>(){"D2_Option1","D2_Option2","D2_Option3"};
+            int dropIndex1=0;
+            int dropIndex2=0;
             try {
-                var dropIndex1=list1.IndexOf(Setting.Dropdown1Key);
-                var dropIndex2=list2.IndexOf(Setting.Dropdown2Key);
-                Setting.SetDropdown1(dropDownOptions1[dropIndex1]);
-                Setting.SetDropdown2(dropDownOptions2[dropIndex2]);
+                dropIndex1=list1.IndexOf(Setting.Dropdown1Key);
+                dropIndex2=list2.IndexOf(Setting.Dropdown2Key);
             } catch (Exception e) {
                 Debug.Log(Setting.Dropdown1Key+"=key1");
                 Debug.Log(Setting.Dropdown2Key+"=key2");
-                Debug.LogError("key不在列表中");
+                Debug.LogError("key不在列表中"+e.StackTrace);
             }
-            ModSettingAPI.AddDropdownList("D1", dropDownDescription1, dropDownOptions1, Setting.Dropdown1, value => {
-                Setting.SetDropdown1(value);
+            ModSettingAPI.AddDropdownList("D1", dropDownDescription1, dropDownOptions1, dropDownOptions1[dropIndex1], value => {
                 Setting.Dropdown1Key = list1[dropDownOptions1.IndexOf(value)];
             } );
-            ModSettingAPI.AddDropdownList("D2", dropDownDescription2, dropDownOptions2, Setting.Dropdown2, value => {
-                Setting.SetDropdown2(value);
+            ModSettingAPI.AddDropdownList("D2", dropDownDescription2, dropDownOptions2, dropDownOptions2[dropIndex2], value => {
                 Setting.Dropdown2Key = list2[dropDownOptions2.IndexOf(value)];
             });
             ModSettingAPI.AddToggle("T1", toggleDescription1, Setting.Toggle1, Setting.SetToggle1);
@@ -79,12 +78,13 @@ namespace ModSettingTest {
             ModSettingAPI.AddSlider("S4", sliderDescription4, 50, 0, 200, value => { Debug.Log("滑块4:" + value); });
             ModSettingAPI.AddInput("I1", inputDescription1, Setting.Input1, 40, Setting.SetInput1);
             ModSettingAPI.AddInput("I2", inputDescription2, Setting.Input2, 50, Setting.SetInput2);
-            ModSettingAPI.AddKeybinding("K1", keyBindingDescription1, Setting.Keybinding1, Setting.SetKeybinding1);
-            ModSettingAPI.AddKeybinding("K2",keyBindingDescription2, Setting.Keybinding2, Setting.SetKeybinding2);
+            ModSettingAPI.AddKeybinding("K1", keyBindingDescription1, Setting.Keybinding1,default, Setting.SetKeybinding1);
+            ModSettingAPI.AddKeybinding("K2",keyBindingDescription2, Setting.Keybinding2, KeyCode.None,Setting.SetKeybinding2);
             //设置按键绑定默认值
             ModSettingAPI.AddKeybinding("K3", keyBindingDescription3, KeyCode.Alpha0, KeyCode.Alpha0, value => { Debug.Log(value); });
             ModSettingAPI.AddKeybinding("K4", keyBindingDescription4, KeyCode.Alpha1, KeyCode.Alpha1);
-
+            //使用新输入系统
+            ModSettingAPI.AddKeybinding("K5","按键绑定5",Key.A,Key.A, value => { Debug.Log(value); });
             ModSettingAPI.AddButton("B1", buttonDescription1, "按钮",
                 () => { ModSettingAPI.RemoveUI("S2", result => { Debug.Log($"移除{(result ? "成功" : "失败")}"); }); });
             ModSettingAPI.AddButton("B2", buttonDescription2, "重置", Reset);
@@ -93,9 +93,9 @@ namespace ModSettingTest {
             ModSettingAPI.AddGroup("G1", groupDescription1, new List<string>() { "D1", "D2" }, 0.6f, true);
             ModSettingAPI.AddGroup("G2", groupDescription2, new List<string>() { "T1", "T2" }, 0.7f, true, true);
             ModSettingAPI.AddGroup("G3", groupDescription3, new List<string>() { "S1", "S2", "S3", "S4" });
-            // ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1", "I2"}, 0.7f,false,true);
-            // ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4"});
-            // ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "B1", "B2","B3"});
+            ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1","G3", "I2"}, 0.9f,false,true);
+            ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4","G4"},0.9f);
+            ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "G5","B1", "B2","B3"},0.9f);
             //注: 目前不支持group的嵌套，后续更新实现
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             //测试 issue1
@@ -143,7 +143,7 @@ namespace ModSettingTest {
         // 如果不想改变mod标题位置，可以使用RmoveUI(key)后，添加相应的UI
         // 如果觉得重新实例化会损失性能，后续更新UpdateUI(key)类似的API，或者使用对象池，或者RegisterLanguagePack(..)由ModSetting来更新UI
         private void LocalizationManager_OnSetLanguage(SystemLanguage obj) {
-            ModSettingAPI.RemoveMod();
+            ModSettingAPI.Clear();
             AddUI(obj);
         }
 
