@@ -8,6 +8,7 @@ using UnityEngine.InputSystem;
 namespace ModSettingTest {
     public class ModBehaviour : Duckov.Modding.ModBehaviour {
         private Dictionary<SystemLanguage, Dictionary<string, string>> languagePack = new();
+        private bool isInit = false;
         private void OnEnable() {
             ModManager.OnModActivated += ModManager_OnModActivated;
             ModManager.OnModWillBeDeactivated += ModManager_OnModWillBeDeactivated;
@@ -24,8 +25,31 @@ namespace ModSettingTest {
             Saver.Save();
             Setting.Clear();
         }
+
+        private void Update() {
+            if (Input.GetKeyDown(Setting.Keybinding1)) {
+                Setting.SetSlider1(Mathf.Max(0, Setting.Slider1 - 2));
+            }
+
+            if (Input.GetKeyDown(Setting.Keybinding2)) {
+                Setting.SetSlider1(Mathf.Min(100, Setting.Slider1 + 2));
+                ModSettingAPI.GetValue<string>("I2", result => { Debug.Log("输入框2的值为:" + result); });
+                ModSettingAPI.GetValue<int>("S4", value => { Debug.Log("S4:" + value); });
+            }
+            //测试clear
+            if (Input.GetKeyDown(KeyCode.T)) {
+                if (isInit) {
+                    ModSettingAPI.Clear();
+                    isInit = false;
+                } else {
+                    AddUI();
+                }
+            }
+        }
+
         //language参数是为了测试多语言切换
         private void AddUI(SystemLanguage language = SystemLanguage.ChineseSimplified) {
+            isInit = true;
             if (!languagePack.TryGetValue(language, out var dictionary))
                 dictionary = languagePack[SystemLanguage.English];
             string dropDownDescription1 = dictionary["D1"];
@@ -96,23 +120,36 @@ namespace ModSettingTest {
             ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1","G3", "I2"}, 0.9f,false,true);
             ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4","G4"},0.9f);
             ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "G5","B1", "B2","B3"},0.9f);
-            //注: 目前不支持group的嵌套，后续更新实现
+            ModSettingAPI.AddToggle("B4", "移除按钮组", true,value=> {
+                if (value) {
+                    ModSettingAPI.AddSlider("S1", sliderDescription1, Setting.Slider1, new Vector2(0, 100), Setting.SetSlider1);
+                    ModSettingAPI.AddSlider("S2", sliderDescription2, Setting.Slider2, new Vector2(0, 1000), Setting.SetSlider2, 2);
+                    ModSettingAPI.AddSlider("S3", sliderDescription3, 60, new Vector2(0, 1000), null, 3, 8);
+                    ModSettingAPI.AddSlider("S4", sliderDescription4, 50, 0, 200, value => { Debug.Log("滑块4:" + value); });
+                    ModSettingAPI.AddInput("I1", inputDescription1, Setting.Input1, 40, Setting.SetInput1);
+                    ModSettingAPI.AddInput("I2", inputDescription2, Setting.Input2, 50, Setting.SetInput2);
+                    ModSettingAPI.AddKeybinding("K1", keyBindingDescription1, Setting.Keybinding1,default, Setting.SetKeybinding1);
+                    ModSettingAPI.AddKeybinding("K2",keyBindingDescription2, Setting.Keybinding2, KeyCode.None,Setting.SetKeybinding2);
+                    //设置按键绑定默认值
+                    ModSettingAPI.AddKeybinding("K3", keyBindingDescription3, KeyCode.Alpha0, KeyCode.Alpha0, value => { Debug.Log(value); });
+                    ModSettingAPI.AddKeybinding("K4", keyBindingDescription4, KeyCode.Alpha1, KeyCode.Alpha1);
+                    ModSettingAPI.AddButton("B1", buttonDescription1, "按钮",
+                        () => { ModSettingAPI.RemoveUI("S2", result => { Debug.Log($"移除{(result ? "成功" : "失败")}"); }); });
+                    ModSettingAPI.AddButton("B2", buttonDescription2, "重置", Reset);
+                    ModSettingAPI.AddButton("B3", buttonDescription3, "移除", () => { ModSettingAPI.RemoveUI("G3"); });
+                    ModSettingAPI.AddGroup("G3", groupDescription3, new List<string>() { "S1", "S2", "S3", "S4" });
+                    ModSettingAPI.AddGroup("G4", "输入组", new List<string>() { "I1","G3", "I2"}, 0.9f,false,true);
+                    ModSettingAPI.AddGroup("G5", "绑定组", new List<string>() { "K1", "K2","K3","K4","G4"},0.9f);
+                    ModSettingAPI.AddGroup("G6", "按钮组", new List<string>() { "G5","B1", "B2","B3"},0.9f);
+                } else {
+                    ModSettingAPI.RemoveUI("G6");
+                }
+            });
             Setting.OnSlider1ValueChanged += Setting_OnSlider1ValueChanged;
             //测试 issue1
             // TestIssue.Issue1();
         }
 
-        private void Update() {
-            if (Input.GetKeyDown(Setting.Keybinding1)) {
-                Setting.SetSlider1(Mathf.Max(0, Setting.Slider1 - 2));
-            }
-
-            if (Input.GetKeyDown(Setting.Keybinding2)) {
-                Setting.SetSlider1(Mathf.Min(100, Setting.Slider1 + 2));
-                ModSettingAPI.GetValue<string>("I2", result => { Debug.Log("输入框2的值为:" + result); });
-                ModSettingAPI.GetValue<int>("S4", value => { Debug.Log("S4:" + value); });
-            }
-        }
         private void Reset() {
             //注意：SetValue只是单方面通知UI设置值,也就是说UI的onValueChange不会被调用
             //如果需要同步，应该先设置此mod的值，再将此mod的值设置给ModSetting。如：Dropdown1这样，其余的都只改变了UI的值并没有改变此mod的值。
